@@ -1,0 +1,83 @@
+// Refresh the modified date of all the files inside the folder and subfolder
+// 
+// Author: Raphael Godoy (rgodoy86@gmail.com)
+// Release Date: April 28th 2021
+// Modified Date: n.a.
+// Version: 1.0
+//
+
+
+var list_main = []
+var main_folder_ID = 'GDrive folder ID'
+
+// Scan the folders and get the ID of the child
+function list_folders() {
+  var parent_folder = DriveApp.getFolderById(main_folder_ID);
+  var child_folders = parent_folder.getFolders();
+
+  while(child_folders.hasNext()) {
+    var child = child_folders.next();
+    list_main.push(child.getId());
+
+    // Call function to see the child within the child
+    get_sub_folders(child);
+  }
+  Logger.log('*******************')
+  Logger.log('List of folder: ' + parent_folder.getName())
+  Logger.log(list_main)
+  Logger.log('')
+
+  // After creating the list of folder ID
+  update_last_modified_date_within_folder();
+
+}
+
+// Get the subfolders of a given folder/parent
+function get_sub_folders(parent) {
+  parent = parent.getId();
+
+  var childFolder = DriveApp.getFolderById(parent).getFolders();
+  while(childFolder.hasNext()) {
+    var child = childFolder.next();
+    list_main.push(child.getId());
+    get_sub_folders(child);
+  }
+}
+
+// scan the ID folders and rename the files inside this folder
+// then rename it back
+
+function update_last_modified_date_within_folder(){
+  var main_folder = DriveApp.getFolderById(main_folder_ID);
+  var main_files = main_folder.getFiles();
+  while(main_files.hasNext()){
+      var file = main_files.next();
+      var current_name = file.getName().slice(0,-4)
+      var file_extension = file.getName().slice(-4,)
+
+      file.setName(current_name + '_' + file_extension)
+      file.setName(current_name + file_extension)
+      Logger.log('File name: ' + file.getName())
+
+  }
+
+
+  for (idx in list_main){    
+    var folder = DriveApp.getFolderById(list_main[idx]);
+    var files = folder.getFiles();
+
+    Logger.log('*******************')
+    Logger.log('Updating files inside folder: ' + folder.getName())
+
+    while (files.hasNext()){
+      var file = files.next();
+      var current_name = file.getName().slice(0,-4)
+      var file_extension = file.getName().slice(-4,)
+
+      file.setName(current_name + '_' + file_extension)
+      file.setName(current_name + file_extension)
+      Logger.log('File name: ' + file.getName())
+      //row.push(file.getName(),file.getId(),file.getSize())
+    }
+  }
+}
