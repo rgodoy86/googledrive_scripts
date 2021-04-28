@@ -1,0 +1,83 @@
+// File, FOlder and Subfolder Scanner
+//
+// author: Raphael Godoy
+// date: April 28th 2021
+//
+// This script will scan all subfolder and all files inside the given folder
+// It will return the amount of subfolders, files and total size in MB
+//
+
+var list_main = []
+var main_folder_ID = 'folder ID here'
+
+// Scan the folders and get the ID of the child
+function list_folders() {
+  var parent_folder = DriveApp.getFolderById(main_folder_ID);
+  var child_folders = parent_folder.getFolders();
+
+  while(child_folders.hasNext()) {
+    var child = child_folders.next();
+    list_main.push(child.getId());
+    Logger.log(child.getName())
+
+    // Call function to see the child within the child
+    get_sub_folders(child);
+  }
+
+  // Count subfolders and files after creating the list of folder ID
+  scan_files_in_folder_list();
+}
+
+// Get the subfolders of a given folder/parent
+function get_sub_folders(parent) {
+  parent = parent.getId();
+  list_local = [];
+
+  var childFolder = DriveApp.getFolderById(parent).getFolders();
+  while(childFolder.hasNext()) {
+    var child = childFolder.next();
+    list_main.push(child.getId());
+    Logger.log(child.getName())
+    get_sub_folders(child);
+  }
+}
+
+function scan_files_in_folder_list(){
+  var main_folder = DriveApp.getFolderById(main_folder_ID);
+  var main_files = main_folder.getFiles();
+
+  count_subfolder = 0
+  count_file = 0
+  count_size = 0
+
+  // read parent files
+    while (main_files.hasNext()){
+        var main_file = main_files.next();
+        Logger.log(main_file.getName())
+        count_file += 1        
+        count_size += main_file.getSize();
+      } 
+
+  Logger.log('Scanning subfolder')
+  for (idx in list_main){
+    count_subfolder += 1
+    var folder = DriveApp.getFolderById(list_main[idx]);
+    var files = folder.getFiles();
+
+    Logger.log(folder.getName())
+    while (files.hasNext()){        
+        var file = files.next();
+        count_file += 1
+        count_size += file.getSize();
+      } 
+  }
+  count_size /= (1024*1024)
+
+  Logger.log('*******************')
+   Logger.log('Folder: ' + main_folder.getName())
+   Logger.log('Subfolders: ' + count_subfolder)
+   Logger.log('Files: ' + count_file)   
+   Logger.log('Total size (MB): ' + count_size)
+
+
+}
